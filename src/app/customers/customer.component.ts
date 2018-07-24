@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, AbstractControl, ValidatorFn, FormArray } from '@angular/forms';
 
 import 'rxjs/add/operator/debounceTime';
 import { Customer } from './customer';
@@ -37,10 +37,14 @@ export class CustomerComponent implements OnInit {
     customer: Customer= new Customer(); // data model
     emailMessage: string;
 
+    get addresses(): FormArray {
+        return <FormArray>this.customerForm.get('addresses');
+    }
+
     private validationMessages = {
         required:  'Please enter your email address.',
         pattern: 'Please enter a valid email address.'
-    }
+    };
 
     constructor(private fb: FormBuilder) {
     }
@@ -57,6 +61,7 @@ export class CustomerComponent implements OnInit {
             notification: 'email',
             rating: ['', ratingRange(1, 5)],
             sendCatalog: true,
+            addresses: this.fb.array([this.buildAddress()])
         });
 
         // Watch for changes
@@ -64,6 +69,7 @@ export class CustomerComponent implements OnInit {
             value => this.setNotification(value)
         );
 
+        // TODO: add all input fields maybe a reusable function
         const emailControl = this.customerForm.get('emailGroup.email');
         emailControl.valueChanges.debounceTime(1000).subscribe(() =>
             this.setMessage(emailControl)
@@ -94,6 +100,20 @@ export class CustomerComponent implements OnInit {
         phoneControl.updateValueAndValidity();
     }
 
+    addAddress(): void {
+        this.addresses.push(this.buildAddress());
+    }
+
+    buildAddress(): FormGroup {
+        return this.fb.group({
+            addressType: 'home',
+            street1: ['', Validators.required],
+            street2: '',
+            city: ['', Validators.required],
+            state: ['', Validators.required],
+            zip: ['', Validators.required]
+        });
+    }
     populateTestData(): void {
         // or setValue
         this.customerForm.patchValue({

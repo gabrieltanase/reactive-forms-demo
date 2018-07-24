@@ -43,6 +43,13 @@ var CustomerComponent = (function () {
             pattern: 'Please enter a valid email address.'
         };
     }
+    Object.defineProperty(CustomerComponent.prototype, "addresses", {
+        get: function () {
+            return this.customerForm.get('addresses');
+        },
+        enumerable: true,
+        configurable: true
+    });
     CustomerComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.customerForm = this.fb.group({
@@ -56,9 +63,11 @@ var CustomerComponent = (function () {
             notification: 'email',
             rating: ['', ratingRange(1, 5)],
             sendCatalog: true,
+            addresses: this.fb.array([this.buildAddress()])
         });
         // Watch for changes
         this.customerForm.get('notification').valueChanges.subscribe(function (value) { return _this.setNotification(value); });
+        // TODO: add all input fields maybe a reusable function
         var emailControl = this.customerForm.get('emailGroup.email');
         emailControl.valueChanges.debounceTime(1000).subscribe(function () {
             return _this.setMessage(emailControl);
@@ -86,6 +95,19 @@ var CustomerComponent = (function () {
             phoneControl.clearValidators();
         }
         phoneControl.updateValueAndValidity();
+    };
+    CustomerComponent.prototype.addAddress = function () {
+        this.addresses.push(this.buildAddress());
+    };
+    CustomerComponent.prototype.buildAddress = function () {
+        return this.fb.group({
+            addressType: 'home',
+            street1: ['', forms_1.Validators.required],
+            street2: '',
+            city: ['', forms_1.Validators.required],
+            state: ['', forms_1.Validators.required],
+            zip: ['', forms_1.Validators.required]
+        });
     };
     CustomerComponent.prototype.populateTestData = function () {
         // or setValue
